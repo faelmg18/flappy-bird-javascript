@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<!--[if IE 9]> <html lang="en" class="ie9"> <![endif]-->
+<!--[if !IE]><!-->
+<html lang="pt">
+<!--<![endif]-->
+
+<head>
+    <meta charset="utf-8">
+    <title>Jogo JavaScript</title>
+    <style type="text/css">
+        canvas {
+            position: absolute;
+            top: 0px;
+            bottom: 0px;
+            left: 0px;
+            right: 0px;
+            margin: auto;
+        }
+        
+        .centerCanvas {
+            position: absolute;
+            top: 0px;
+            bottom: 0px;
+            left: 0px;
+            right: 0px;
+            margin: auto;
+        }
+        
+        p {
+            top: 15px;
+            position: relative;
+            font-size: 28px;
+            color: #FFFFCC;
+        }
+        
+        input {
+            top: 20px;
+            position: relative;
+        }
+        
+        .btnLogin {
+            display: inline-block;
+            *border-left: 0 none #e6e6e6;
+            border-right: 0 none #e6e6e6;
+            border-top: 0 none #e6e6e6;
+            border-bottom: 0 none #a2a2a2;
+            min-width: 100px;
+            display: inline;
+            padding: 4px 12px;
+            margin-bottom: 0;
+            *margin-left: .3em;
+            font-size: 14px;
+            line-height: 20px;
+            *line-height: 20px;
+            color: #FFF;
+            text-align: center;
+            text-shadow: 0 1px 1px #000;
+            vertical-align: middle;
+            cursor: pointer;
+            background-color: rgb(224, 76, 65);
+            *background-color: #e6e6e6;
+            background-repeat: repeat-x;
+            *-webkit-border-radius: 4px;
+            -moz-border-radius: 4px;
+            border-radius: 4px;
+            zoom: 1;
+            -webkit-box-shadow: inset 0 1px 0 #000, 0 1px 2px rgba(0, 0, 0, 0.05);
+            -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+            background-image: -moz-linear-gradient(top, #ffffff, #e6e6e6);
+            *;
+        }
+        
+        .position {
+            position: relative;
+            margin-top: 50px;
+            float:
+        }
+        
+        .btn {
+            position: absolute;
+            top: 50%;
+            padding: 15px;
+            left: 0px;
+            right: 0px;
+            margin: auto;
+            width: 350px;
+            text-align: center;
+            border-radius: 5px;
+            background-color: #9900FF;
+            border: none;
+            font-size: 15px;
+            box-shadow: 1px 1px 5px 4px #3333FF;
+            color: #fff;
+        }
+        
+        .divLogin {
+            width: auto;
+            margin: 0 auto;
+            text-align: center;
+            background-color: #008080;
+            box-shadow: 1px 2px 10px 4px #0093cf;
+            max-width: 400px;
+            height: 200px;
+            border-radius: 5px;
+            top: 200px;
+            position: relative
+        }
+        
+        .createPlacar {
+            position: absolute;
+            top: 1%;
+            padding: 15px;
+            left: 0px;
+            right: 0px;
+            margin: auto;
+            width: 150px;
+            height: auto;
+            text-align: center;
+            border-radius: 5px;
+            background-color: #FF9966;
+            border: none;
+            font-size: 15px;
+            box-shadow: 1px 1px 5px 4px #3333FF;
+            color: #fff;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <script>
+        // variaveis do jogo
+        var canvas, nameUser, modalAlert, ctx, qtdVida = 5,
+            ALTURA, distanciaCano = 225,
+            requestIdAnimation = 0,
+            label, stopped = false,
+            LARGURA, base_image, base_cano, frames = 0,
+            velicidade = 4,
+            maxPulos = 3,
+            chao = {
+
+                y: 550,
+                altura: 50,
+                cor: "#ffdf70",
+
+                desenha: function() {
+                    ctx.fillStyle = this.cor;
+                    ctx.fillRect(0, this.y, LARGURA, this.altura);
+                }
+            },
+
+            passaro = {
+                x: 50,
+                y: 500,
+                altura: 50,
+                largura: 50,
+                cor: "#ff4e4e",
+                gravidade: 1.1,
+                velocidade: 0,
+                forcaDoPulo: 13.0,
+                qntPulos: 0,
+
+                atualiza: function() {
+                    this.velocidade += this.gravidade;
+                    this.y += this.velocidade;
+                    if (this.y > chao.y - this.altura) {
+                        this.y = chao.y - this.altura;
+                        //this.y = 500;
+                    };
+                },
+
+                pula: function() {
+                    /* Faz o passaro pular*/
+                    if (passaro.y > 0) {
+                        this.velocidade = -this.forcaDoPulo;
+                    } else {
+
+                        this.velocidade = 0;
+                    }
+
+                },
+
+                desenha: function() {
+
+                     /* Desenha o passo na tela*/
+                    if (this.qntPulos == 0) {
+                        base_image = new Image();
+                        base_image.src = 'imgs/passaro.png';
+                        ctx.drawImage(base_image, this.x, this.y, this.largura, this.altura);
+                        this.qntPulos = 1;
+                    } else {
+                        base_image = new Image();
+                        base_image.src = 'imgs/passaro2.png';
+                        ctx.drawImage(base_image, this.x, this.y, this.largura, this.altura);
+                        this.qntPulos = 0;
+                    }
+                }
+            },
+
+            nuvem = {
+               
+                _arr: [],
+                _arrNuvem: ["imgs/nuvem1Copia.png", "imgs/nuvem2.png", "imgs/nuvem2.png", "imgs/nuvem4.png"],
+                tempInserirNuvem: 0,
+
+                insereNuvem: function() {
+
+                    this._arr.push({
+                        x: LARGURA,
+                        largura: 200,
+                        altura: 150,
+                        src: this._arrNuvem[Math.floor(4 * Math.random())],
+                        y: 10
+                    });
+
+                    this.tempInserirNuvem = 40 + Math.floor(120 * Math.random());
+                },
+
+                /* faz com que a nuvem ande da direita para a esquerda*/
+                atualizaNuvem: function() {
+                    if (this.tempInserirNuvem == 0) {
+                        this.insereNuvem();
+                    } else {
+                        this.tempInserirNuvem--;
+                    }
+
+                    for (var i = 0, tam = this._arr.length; i < tam; i++) {
+                        var obs = this._arr[i];
+                        obs.x -= velicidade;
+
+                        if (obs.x <= -obs.largura) {
+
+                            this._arr.splice(i, 1);
+                            tam--;
+                            i--;
+                        };
+
+                    };
+                },
+
+                /* Remove a nuvem da tela na tela*/
+                remove: function() {
+                    while (this._arr.length) {
+                        this._arr.pop();
+                    }
+                },
+
+                desenhaNuvem: function() {
+                     /* Desenha as nuvens na tela*/
+
+                    for (var i = 0, tam = this._arr.length; i < tam; i++) {
+
+                        var obs = this._arr[i];
+
+                        ctx.drawImage(createImage(obs.src), obs.x, obs.y, obs.largura, obs.altura);
+
+                    };
+
+                },
+            },
+
+            vida = {
+
+                tempInsert: 0,
+                _arrVida: [],
+
+                /* Insere a vida na tela*/
+                insere: function() {
+                    this._arrVida.push({
+                        altura: 32,
+                        largura: 32,
+                        y: 10 + Math.floor(450 * Math.random()),
+                        x: LARGURA,
+                        image: createImage("imgs/smb3_item_1up.png"),
+
+
+                    });
+
+                    this.tempInsert = 300 + Math.floor(1000 * Math.random());
+                    
+                },
+
+                remove: function() {
+                    while (this._arrVida.length) {
+                        this._arrVida.pop();
+                    }
+                },
+
+                atualiza: function() {
+                    if (this.tempInsert == 0) {
+                        this.insere();
+                    } else {
+                        this.tempInsert--;
+                    }
+                    for (var i = 0, tam = this._arrVida.length; i < tam; i++) {
+                        var obs = this._arrVida[i];
+                        obs.x -= velicidade;
+
+                        if ((passaro.x + passaro.largura) > obs.x) {
+                            var e = 5
+                        };
+
+
+                        // verifica se o passaro esta a tras da vida
+                        if ((passaro.x + passaro.largura) > obs.x) {
+                            // verifica se a vida esta abaixo do passaro
+
+                            if (obs.y >= passaro.y) {
+
+                                // verifica se a vida esta entre o passaro
+                                if (obs.y - passaro.y >= 0 && obs.y - passaro.y <= 50 && (passaro.x + passaro.largura) > obs.x + obs.largura) {
+                                    this._arrVida.splice(i, 1);
+                                    tam--;
+                                    i--;
+                                    qtdVida++;
+                                    label.innerHTML = "Bem Vindo: " + nameUser + "</br> Placar: " + obstaculos.count + "</br>Vidas = " + qtdVida;
+
+                                }
+
+                            } // passaro esta acima da vida
+                            else {
+
+                                // verifica se a vida esta entre o passaro
+                                if (passaro.y - obs.y >= 0 && passaro.y - obs.y <= 32 && (passaro.x + passaro.largura) > obs.x) {
+                                    this._arrVida.splice(i, 1);
+                                    tam--;
+                                    i--;
+                                    qtdVida++;
+                                    label.innerHTML = "Bem Vindo: " + nameUser + "</br> Placar: " + obstaculos.count + "</br>Vidas = " + qtdVida;
+                                }
+
+                            }
+
+                        };
+
+                        // verifica se o passaro esta a frente da vida
+                        if (passaro.x > obs.x + obs.largura) {
+                            // verifica se a vida esta abaixo do passaro
+
+                            if (obs.y >= passaro.y) {
+
+                                // verifica se a vida esta entre o passaro
+                                if (obs.y - passaro.y >= 0 && obs.y - passaro.y <= 50 && (passaro.x + passaro.largura) > obs.x) {
+                                    this._arrVida.splice(i, 1);
+                                    tam--;
+                                    i--;
+                                    qtdVida++;
+                                    label.innerHTML = "Bem Vindo: " + nameUser + "</br> Placar: " + obstaculos.count + "</br>Vidas = " + qtdVida;
+                                }
+
+                            } // passaro esta acima da vida
+                            else {
+
+                                // verifica se a vida esta entre o passaro
+                                if (passaro.y - obs.y >= 0 && passaro.y - obs.y <= 32 && (passaro.x + passaro.largura) > obs.x) {
+                                    this._arrVida.splice(i, 1);
+                                    tam--;
+                                    i--;
+                                    qtdVida++;
+                                    label.innerHTML = "Bem Vindo: " + nameUser + "</br> Placar: " + obstaculos.count + "</br>Vidas = " + qtdVida;
+                                }
+
+                            }
+
+                        };
+
+
+                        if (obs.x <= -obs.largura) {
+
+                            this._arrVida.splice(i, 1);
+                            tam--;
+                            i--;
+                        };
+
+                    };
+
+                },
+
+                desenha: function() {
+
+                    for (var i = 0, tam = this._arrVida.length; i < tam; i++) {
+
+                        var obs = this._arrVida[i];
+
+                        ctx.drawImage(obs.image, obs.x, obs.y, obs.largura, obs.altura);
+
+                    };
+
+                },
+
+            },
+
+            obstaculos = {
+                _obs: [],
+                _cores: ["#ffbc1c", "#ff1c1c", "#ff85e1", "#52a7ff", "#78ff5d"],
+                tempInsert: 5,
+                count: 0,
+                y: 0,
+                logCount: 0,
+                arrCano: [createImage("imgs/cano1Invert.png"), createImage("imgs/cano2.png")],
+
+                insere: function() {
+                    this._obs.push({
+                        x: LARGURA,
+                        largura: 90,
+                        altura: 80 + Math.floor(320 * Math.random()),
+                        cor: this._cores[Math.floor(5 * Math.random())],
+                        y: ALTURA,
+
+                    });
+
+                    this.tempInsert = 60 + Math.floor(90 * Math.random());
+                },
+
+                atualiza: function() {
+
+                    if (this.tempInsert == 0) {
+                        this.insere();
+
+
+                    } else {
+                        this.tempInsert--;
+                    }
+
+                    for (var i = 0, tam = this._obs.length; i < tam; i++) {
+                        var obs = this._obs[i];
+
+                        obs.x -= velicidade;
+                        this.y = getY(obs.altura);
+
+
+                        if (passaro.y < 0) {
+                            if (qtdVida <= 0) {
+                                stop();
+                            } else {
+                                qtdVida--;
+                                this._obs.splice(i, 1);
+                                tam--;
+                                i--;
+                            }
+
+                        };
+
+                        // verifica se o passaro esta a frente do cano
+                        if (passaro.y <= (obs.y - obs.altura) - distanciaCano) {
+
+                            if ((passaro.x + passaro.largura) > obs.x && obs.x > 0) {
+                                if (qtdVida <= 0) {
+                                    stop();
+                                } else {
+                                    qtdVida--;
+                                    this._obs.splice(i, 1);
+                                    tam--;
+                                    i--;
+                                    label.innerHTML = "Bem Vindo: " + nameUser + "</br> Placar: " + this.count + "</br>Vidas = " + qtdVida;
+                                }
+                            };
+
+                        };
+
+
+                        // verifica se o passaro esta a frente do cano
+                        if (passaro.x > obs.x + obs.largura) {
+                            //verifica se o passaro esta no chao
+                            if (passaro.y > this.y && passaro.x < obs.x + obs.largura) {
+                                if (qtdVida <= 0) {
+                                    stop();
+                                } else {
+                                    qtdVida--;
+                                    this._obs.splice(i, 1);
+                                    tam--;
+                                    i--;
+                                    label.innerHTML = "Bem Vindo: " + nameUser + "</br> Placar: " + this.count + "</br>Vidas = " + qtdVida;
+                                }
+                            };
+
+                        } // verifica se o passaro esta atras do cano
+                        else if ((passaro.x + passaro.largura) > obs.x) {
+                            //verifica se o passaro esta no chao
+                            if (passaro.y > this.y && (passaro.x + passaro.largura) > obs.x) {
+                                if (qtdVida <= 0) {
+                                    stop();
+                                } else {
+                                    qtdVida--;
+                                    this._obs.splice(i, 1);
+                                    tam--;
+                                    i--;
+                                    label.innerHTML = "Bem Vindo: " + nameUser + "</br> Placar: " + this.count + "</br>Vidas = " + qtdVida;
+                                }
+                            };
+
+                        };
+
+
+                        if (obs.x <= -obs.largura) {
+                            this.count++;
+
+
+                            if (this.count > 5) {
+                                velicidade++;
+                            }
+
+                            label.innerHTML = "Bem Vindo: " + nameUser + "</br> Placar: " + this.count + "</br>Vidas = " + qtdVida;
+                            this._obs.splice(i, 1);
+                            tam--;
+                            i--;
+                            this.logCount = 0;
+                        };
+
+                    };
+                },
+
+
+                remove: function() {
+                    while (this._obs.length) {
+                        this._obs.pop();
+                    }
+                },
+
+                desenha: function() {
+
+
+                    for (var i = 0, tam = this._obs.length; i < tam; i++) {
+
+                        var obs = this._obs[i];
+
+                        if (obs.y < 5) {
+                            obs.y = 10;
+                        };
+
+                        ctx.drawImage(this.arrCano[0], obs.x, 0, obs.largura, (obs.y - obs.altura) - distanciaCano);
+                        ctx.drawImage(this.arrCano[1], obs.x, chao.y - obs.altura, obs.largura, obs.altura);
+
+                        // ctx.fillRect(obs.x, chao.y - obs.altura, obs.largura, obs.altura);
+                    };
+
+                },
+
+            };
+
+        function getY(altura) {
+            return (ALTURA - altura) - 100;
+        }
+
+        function main() {
+            createCanvasGame(KeyDown);
+            createPlacar();
+            roda();
+        }
+
+        function roda() {
+
+            image();
+            atualiza();
+            desenha();
+
+            if (!stopped) {
+                requestIdAnimation = window.requestAnimationFrame(roda);
+            } else {
+                creteAlertStop();
+            }
+        }
+
+        function atualiza() {
+            frames++;
+            nuvem.atualizaNuvem();
+            passaro.atualiza();
+            obstaculos.atualiza();
+            vida.atualiza();
+
+        }
+
+        function desenha() {
+            ctx.fillStyle = "#00FFFF";
+
+            ctx.fillRect(0, 0, LARGURA, ALTURA);
+            chao.desenha();
+            obstaculos.desenha();
+            passaro.desenha();
+            nuvem.desenhaNuvem();
+            vida.desenha();
+        }
+
+        function starJogo() {
+            stopped = false;
+            obstaculos.remove();
+            nuvem.remove();
+            closeAlertStop();
+            obstaculos.count = 0;
+            velicidade = 4;
+            qtdVida = 6;
+            label.innerHTML = "Bem Vindo: " + nameUser + "</br> Placar: " + 0 + "</br>Vidas = " + qtdVida;
+            passaro.y = 500;
+            document.addEventListener("keydown", KeyDown, this.event);
+            roda();
+        }
+
+        function stop() {
+            document.removeEventListener("keydown", KeyDown, true);
+            stopped = true;
+        }
+
+        function image() {
+            base_image = new Image();
+            base_image.src = 'imgs/passaro.png';
+        }
+
+        function KeyDown(event) {
+            var key = event.keyCode;
+            if (key == "80") {
+                pause();
+            }
+            if (qtdVida <= 0) {
+
+                if (key == "32" || key == "13") {
+                    starJogo();
+                }
+            }
+
+            if (key == "38") {
+                passaro.pula();
+            }
+        }
+
+        function pause() {
+
+            if (stopped) {
+                stopped = false;
+            } else {
+                stopped = true;
+            }
+        }
+
+        function createImage(obj) {
+
+            base_cano = new Image();
+            base_cano.src = obj;
+            return base_cano
+
+        }
+
+        function closeAlertStop() {
+            var btn = document.getElementById("btnReset");
+            document.body.removeChild(btn)
+        }
+
+        function creteAlertStop() {
+
+            var button = document.createElement("input");
+            button.type = "button";
+            button.value = "Você perdeu!!\n Reiniciar o jogo?\n Clique aqui";
+            button.onclick = starJogo;
+            button.className = "btn";
+            button.id = "btnReset";
+            ctx = canvas.getContext("2d");
+            document.body.appendChild(button);
+        }
+
+        function createPlacar() {
+            label = document.createElement("Label");
+
+            label.id = "text";
+            label.name = "text";
+            label.type = "text";
+            label.innerHTML = "Bem Vindo: " + nameUser + "</br> Placar: " + this.count + "</br>Vidas = " + qtdVida;
+            label.className = "createPlacar"
+
+            ctx = canvas.getContext("2d");
+
+            document.body.appendChild(label);
+        }
+
+        function getValuesLogin() {
+
+            var nome = document.getElementById("txtNome").value;
+
+            var retorno = true;
+            if (nome == "" || nome == null) {
+
+                alert('Digite um Nome');
+            } else {
+                nameUser = nome;
+                main();
+            }
+        }
+
+        function createCanvasGame(KeyDown) {
+
+            ALTURA = window.innerHeight;
+            LARGURA = window.innerWidth;
+
+            if (LARGURA >= 500) {
+                LARGURA = 600;
+                ALTURA = 600;
+
+            };
+
+            canvas = document.createElement("canvas");
+
+            canvas.width = LARGURA;
+
+            canvas.height = ALTURA;
+
+            canvas.style.border = "1px solid #000";
+
+            canvas.className = "centerCanvas";
+
+            ctx = canvas.getContext("2d");
+
+            document.body.appendChild(canvas);
+
+            document.addEventListener("keydown", KeyDown, this.event);
+            document.addEventListener("mousedown", event);
+
+        }
+
+        function resetPlayer() {
+
+            document.body.removeChild(canvas);
+            document.body.appendChild(canvas);
+
+            canvas.addEventListener("mousedown", event);
+        }
+
+        function log(text) {
+
+            var consoleContent = document.getElementById('logConsole');
+            consoleContent.innerHTML += text + "\n";
+        }
+    </script>
+
+
+    <div id="content" style="width:100%;">
+        <div class="divLogin">
+            <div>
+                <p>Digite seu nome</p>
+                <input id="txtNome" type="text" />
+            </div>
+            <button class="btnLogin position" onclick="getValuesLogin()" href="#">Entrar</button>
+
+        </div>
+    </div>
+
+    <div id="console" style="width:300px">
+        <div class="header">
+            <span id="logConsole" class="expand"></span>
+        </div>
+        <div class="content" style="display: none;"></div>
+    </div>
+
+</body>
+
+</html>
