@@ -16,7 +16,6 @@
             right: 0px;
             margin: auto;
         }
-        
         .centerCanvas {
             position: absolute;
             top: 0px;
@@ -25,19 +24,16 @@
             right: 0px;
             margin: auto;
         }
-        
         p {
             top: 15px;
             position: relative;
             font-size: 28px;
             color: #FFFFCC;
         }
-        
         input {
             top: 20px;
             position: relative;
         }
-        
         .btnLogin {
             display: inline-block;
             *border-left: 0 none #e6e6e6;
@@ -70,13 +66,11 @@
             background-image: -moz-linear-gradient(top, #ffffff, #e6e6e6);
             *;
         }
-        
         .position {
             position: relative;
             margin-top: 50px;
             float:
         }
-        
         .btn {
             position: absolute;
             top: 50%;
@@ -93,7 +87,6 @@
             box-shadow: 1px 1px 5px 4px #3333FF;
             color: #fff;
         }
-        
         .divLogin {
             width: auto;
             margin: 0 auto;
@@ -106,7 +99,6 @@
             top: 200px;
             position: relative
         }
-        
         .createPlacar {
             position: absolute;
             top: 1%;
@@ -134,11 +126,20 @@
         // variaveis do jogo
         var canvas, nameUser, modalAlert, ctx, qtdVida = 5,
             ALTURA, distanciaCano = 225,
+            mAltura = 30 + Math.floor(50 * Math.random()),
+            minAltura = 102,
+            mLARGURA = 30 + Math.floor(50 * Math.random()),
+            minLargura = 102,
             requestIdAnimation = 0,
             label, stopped = false,
             LARGURA, base_image, base_cano, frames = 0,
             velicidade = 4,
             maxPulos = 3,
+            canvasColor = "#00FFFF",
+            hasStarStated = false,
+            colorChange = false,
+            otherColor = "#D3D3D3",
+
             chao = {
 
                 y: 550,
@@ -184,15 +185,19 @@
 
                 desenha: function() {
 
-                     /* Desenha o passo na tela*/
+                    /* Desenha o passo na tela*/
                     if (this.qntPulos == 0) {
                         base_image = new Image();
                         base_image.src = 'imgs/passaro.png';
+                        base_image.style.opacity = "5";
+                        base_image.style.filter = 'alpha(opacity=50)';
                         ctx.drawImage(base_image, this.x, this.y, this.largura, this.altura);
                         this.qntPulos = 1;
                     } else {
                         base_image = new Image();
                         base_image.src = 'imgs/passaro2.png';
+                        base_image.style.opacity = "5";
+                        base_image.style.filter = 'alpha(opacity=50)';
                         ctx.drawImage(base_image, this.x, this.y, this.largura, this.altura);
                         this.qntPulos = 0;
                     }
@@ -200,7 +205,7 @@
             },
 
             nuvem = {
-               
+
                 _arr: [],
                 _arrNuvem: ["imgs/nuvem1Copia.png", "imgs/nuvem2.png", "imgs/nuvem2.png", "imgs/nuvem4.png"],
                 tempInserirNuvem: 0,
@@ -248,7 +253,7 @@
                 },
 
                 desenhaNuvem: function() {
-                     /* Desenha as nuvens na tela*/
+                    /* Desenha as nuvens na tela*/
 
                     for (var i = 0, tam = this._arr.length; i < tam; i++) {
 
@@ -269,17 +274,17 @@
                 /* Insere a vida na tela*/
                 insere: function() {
                     this._arrVida.push({
-                        altura: 32,
-                        largura: 32,
+                        altura: 62,
+                        largura: 62,
                         y: 10 + Math.floor(450 * Math.random()),
                         x: LARGURA,
-                        image: createImage("imgs/smb3_item_1up.png"),
+                        image: createImage("imgs/one-up-mushroom.png"),
 
 
                     });
 
                     this.tempInsert = 300 + Math.floor(1000 * Math.random());
-                    
+
                 },
 
                 remove: function() {
@@ -392,6 +397,440 @@
 
             },
 
+            bowser = {
+
+                tempInsert: 0,
+                _arrBowser: [],
+                _temUpdate: 300,
+                _tempToremove: 900,
+                _Up: false,
+                _left: false,
+                _hasBowser: false,
+
+                /* Insere o bowser na tela*/
+                insere: function() {
+                    if (this._hasBowser == false) {
+
+                        if (mAltura < minAltura) {
+                            mAltura = minAltura
+                        }
+
+                        if (mLARGURA < minLargura) {
+                            mLARGURA = minLargura;
+                        }
+
+                        this._arrBowser.push({
+                            altura: mAltura,
+                            largura: mLARGURA,
+                            y: 10 + Math.floor(450 * Math.random()),
+                            x: LARGURA,
+                            image: createImage("imgs/bowser.png"),
+
+
+                        });
+
+                        this.tempInsert = 300 + Math.floor(1000 * Math.random());
+                        this._hasBowser = true;
+                    }
+
+                },
+
+                remove: function() {
+                    while (this._arrBowser.length) {
+                        this._arrBowser.pop();
+                    }
+                },
+
+                update: function(value1) {
+                    var newValue = value1;
+
+                    if (this._Up) {
+                        newValue -= 4;
+                    } else {
+                        newValue += 4;
+                    }
+
+
+                    if (value1 > 460) {
+                        this._Up = true;
+                    } else if (value1 < 0) {
+                        this._Up = false;
+                    }
+
+
+                    return newValue;
+
+                },
+
+                updateTeste: function(value1) {
+                    var newValue = value1;
+
+                    if (this.left) {
+                        newValue -= velicidade;
+                    } else {
+                        newValue += velicidade;
+                    }
+
+
+                    if (value1 > 460) {
+                        this.left = true;
+                    } else if (value1 < 0) {
+                        this.left = false;
+                    }
+
+
+                    return newValue;
+
+                },
+
+                atualiza: function() {
+                    console.log("tempInsert", this.tempInsert);
+
+                    if (this.tempInsert == 0) {
+                        this.insere();
+                    } else {
+                        this.tempInsert--;
+                    }
+
+                    if (hasStarStated == false) {
+
+                        for (var i = 0, tam = this._arrBowser.length; i < tam; i++) {
+                            var obs = this._arrBowser[i];
+                            obs.x = this.updateTeste(obs.x);
+                            obs.y = this.update(obs.y);
+
+                            console.log("_tempToremove", this._tempToremove);
+
+                            if (this._tempToremove == 0) {
+                                this.remove();
+                                this._tempToremove = 900;
+
+                            } else {
+                                this._tempToremove--;
+                            }
+
+
+                            // verifica se o passaro esta a tras do bowser
+                            if ((passaro.x + passaro.largura) > obs.x) {
+                                // verifica se o bowser esta abaixo do passaro
+
+                                if (obs.y >= passaro.y) {
+
+                                    // verifica se o bowser esta entre o passaro
+                                    if (obs.y - passaro.y >= 0 && obs.y - passaro.y <= 50 && (passaro.x + passaro.largura) > obs.x + obs.largura) {
+                                        this._arrBowser.splice(i, 1);
+                                        tam--;
+                                        i--;
+                                        qtdVida--;
+                                        this._hasBowser = false;
+                                        this._tempToremove = 900;
+                                        label.innerHTML = "Bem Vindo: " + nameUser + "</br> Placar: " + obstaculos.count + "</br>Vidas = " + qtdVida;
+
+                                    }
+
+                                } // passaro esta acima do bowser
+                                else {
+
+                                    // verifica se o bowser esta entre o passaro
+                                    if (passaro.y - obs.y >= 0 && passaro.y - obs.y <= 32 && (passaro.x + passaro.largura) > obs.x) {
+                                        this._arrBowser.splice(i, 1);
+                                        tam--;
+                                        i--;
+                                        this._hasBowser = false;
+                                        this._tempToremove = 900;
+                                        /* qtdVida--;*/
+                                        label.innerHTML = "Bem Vindo: " + nameUser + "</br> Placar: " + obstaculos.count + "</br>Vidas = " + qtdVida;
+                                    }
+
+                                }
+
+                            };
+
+                            // verifica se o passaro esta a frente do bowser
+                            if (passaro.x > obs.x + obs.largura) {
+                                // verifica se o bowser esta abaixo do passaro
+
+                                if (obs.y >= passaro.y) {
+
+                                    // verifica se o bowser esta entre o passaro
+                                    if (obs.y - passaro.y >= 0 && obs.y - passaro.y <= 50 && (passaro.x + passaro.largura) > obs.x) {
+                                        this._arrBowser.splice(i, 1);
+                                        tam--;
+                                        i--;
+                                        qtdVida--;
+                                        this._hasBowser = false;
+                                        this._tempToremove = 900;
+                                        label.innerHTML = "Bem Vindo: " + nameUser + "</br> Placar: " + obstaculos.count + "</br>Vidas = " + qtdVida;
+                                    }
+
+                                } // passaro esta acima do bowser
+                                else {
+
+                                    // verifica se o bowser esta entre o passaro
+                                    if (passaro.y - obs.y >= 0 && passaro.y - obs.y <= 32 && (passaro.x + passaro.largura) > obs.x) {
+                                        this._arrBowser.splice(i, 1);
+                                        tam--;
+                                        i--;
+                                        qtdVida--;
+                                        this._hasBowser = false;
+                                        this._tempToremove = 900;
+                                        label.innerHTML = "Bem Vindo: " + nameUser + "</br> Placar: " + obstaculos.count + "</br>Vidas = " + qtdVida;
+                                    }
+
+                                }
+
+                            };
+
+
+                            if (obs.x <= -obs.largura) {
+
+                                this._arrBowser.splice(i, 1);
+                                tam--;
+                                i--;
+                                this._hasBowser = false;
+                                this._tempToremove = 900;
+                            };
+
+                        };
+                    };
+
+                },
+
+                desenha: function() {
+
+                    for (var i = 0, tam = this._arrBowser.length; i < tam; i++) {
+
+                        var obs = this._arrBowser[i];
+
+                        ctx.drawImage(obs.image, obs.x, obs.y, obs.largura, obs.altura);
+
+                    };
+
+                },
+
+            },
+
+            star = {
+
+                tempInsert: 0,
+                _arrStar: [],
+                _temUpdate: 300,
+                _tempToremove: 900,
+                _Up: false,
+                _left: false,
+                _hasStar: false,
+                _tempStarCaptured: 500,
+
+                /* Insere o bowser na tela*/
+                insere: function() {
+                    if (this._hasStar == false) {
+
+                        if (mAltura < minAltura) {
+                            mAltura = minAltura
+                        }
+
+                        if (mLARGURA < minLargura) {
+                            mLARGURA = minLargura;
+                        }
+
+                        this._arrStar.push({
+                            altura: 50,
+                            largura: 50,
+                            y: 10 + Math.floor(450 * Math.random()),
+                            x: LARGURA,
+                            image: createImage("imgs/star.png"),
+
+
+                        });
+
+                        this.tempInsert = 300 + Math.floor(1000 * Math.random());
+                        this._hasStar = true;
+                    }
+
+                },
+
+                remove: function() {
+                    while (this._arrStar.length) {
+                        this._arrStar.pop();
+                        hasStarStated = false;
+                    }
+                },
+
+                update: function(value1) {
+                    var newValue = value1;
+
+                    if (this._Up) {
+                        newValue -= 4;
+                    } else {
+                        newValue += 4;
+                    }
+
+
+                    if (value1 > 460) {
+                        this._Up = true;
+                    } else if (value1 < 0) {
+                        this._Up = false;
+                    }
+
+
+                    return newValue;
+
+                },
+
+                updateTeste: function(value1) {
+                    var newValue = value1;
+
+                    if (this.left) {
+                        newValue -= velicidade;
+                    } else {
+                        newValue += velicidade;
+                    }
+
+
+                    if (value1 > 460) {
+                        this.left = true;
+                    } else if (value1 < 0) {
+                        this.left = false;
+                    }
+
+
+                    return newValue;
+
+                },
+
+                atualiza: function() {
+                    console.log("tempInsert", this.tempInsert);
+
+                    if (this.tempInsert == 0) {
+                        this.insere();
+                    } else {
+                        this.tempInsert--;
+                    }
+
+                    if (hasStarStated) {
+                        this.starCaptured();
+                    }
+
+                    for (var i = 0, tam = this._arrStar.length; i < tam; i++) {
+                        var obs = this._arrStar[i];
+                        obs.x = this.updateTeste(obs.x);
+                        obs.y = this.update(obs.y);
+
+                        console.log("_tempToremove", this._tempToremove);
+
+                        if (this._tempToremove == 0) {
+                            this.remove();
+                            this._tempToremove = 900;
+
+
+                        } else {
+                            this._tempToremove--;
+                        }
+
+
+                        // verifica se o passaro esta a tras do bowser
+                        if ((passaro.x + passaro.largura) > obs.x) {
+                            // verifica se o bowser esta abaixo do passaro
+
+                            if (obs.y >= passaro.y) {
+
+                                // verifica se o bowser esta entre o passaro
+                                if (obs.y - passaro.y >= 0 && obs.y - passaro.y <= 50 && (passaro.x + passaro.largura) > obs.x + obs.largura) {
+                                    this._arrStar.splice(i, 1);
+                                    hasStarStated = true;
+                                    this.starCaptured();
+
+                                }
+
+                            } // passaro esta acima do bowser
+                            else {
+
+                                // verifica se o bowser esta entre o passaro
+                                if (passaro.y - obs.y >= 0 && passaro.y - obs.y <= 32 && (passaro.x + passaro.largura) > obs.x) {
+                                    this._arrStar.splice(i, 1);
+                                    hasStarStated = true;
+                                    this.starCaptured();
+
+                                }
+
+                            }
+
+                        };
+
+                        // verifica se o passaro esta a frente do bowser
+                        if (passaro.x > obs.x + obs.largura) {
+                            // verifica se o bowser esta abaixo do passaro
+
+                            if (obs.y >= passaro.y) {
+
+                                // verifica se o bowser esta entre o passaro
+                                if (obs.y - passaro.y >= 0 && obs.y - passaro.y <= 50 && (passaro.x + passaro.largura) > obs.x) {
+                                    this._arrStar.splice(i, 1);
+                                    hasStarStated = true;
+                                    this.starCaptured();
+
+                                }
+
+                            } // passaro esta acima do bowser
+                            else {
+
+                                // verifica se o bowser esta entre o passaro
+                                if (passaro.y - obs.y >= 0 && passaro.y - obs.y <= 32 && (passaro.x + passaro.largura) > obs.x) {
+                                    this._arrStar.splice(i, 1);
+                                    hasStarStated = true;
+                                    this.starCaptured();
+
+                                }
+
+                            }
+
+                        };
+
+
+                        if (obs.x <= -obs.largura) {
+
+                            this._arrStar.splice(i, 1);
+                            tam--;
+                            i--;
+                            this._hasStar = false;
+                            hasStarStated = false;
+                            this._tempToremove = 900;
+                        };
+
+                    };
+
+                },
+
+
+                starCaptured: function() {
+
+                    console.log("_tempStarCaptured ", this._tempStarCaptured);
+
+                    if (this._tempStarCaptured == 0) {
+
+                        hasStarStated = false;
+                        this._tempStarCaptured = 900;
+
+                    } else {
+                        this._tempStarCaptured--;
+                    }
+
+                },
+
+                desenha: function() {
+
+                    for (var i = 0, tam = this._arrStar.length; i < tam; i++) {
+
+                        var obs = this._arrStar[i];
+
+                        ctx.drawImage(obs.image, obs.x, obs.y, obs.largura, obs.altura);
+
+                    };
+
+                },
+
+            },
+
             obstaculos = {
                 _obs: [],
                 _cores: ["#ffbc1c", "#ff1c1c", "#ff85e1", "#52a7ff", "#78ff5d"],
@@ -443,56 +882,58 @@
 
                         };
 
-                        // verifica se o passaro esta a frente do cano
-                        if (passaro.y <= (obs.y - obs.altura) - distanciaCano) {
+                        if (hasStarStated == false) {
 
-                            if ((passaro.x + passaro.largura) > obs.x && obs.x > 0) {
-                                if (qtdVida <= 0) {
-                                    stop();
-                                } else {
-                                    qtdVida--;
-                                    this._obs.splice(i, 1);
-                                    tam--;
-                                    i--;
-                                    label.innerHTML = "Bem Vindo: " + nameUser + "</br> Placar: " + this.count + "</br>Vidas = " + qtdVida;
-                                }
+                            // verifica se o passaro esta a frente do cano
+                            if (passaro.y <= (obs.y - obs.altura) - distanciaCano) {
+
+                                if ((passaro.x + passaro.largura) > obs.x && obs.x > 0) {
+                                    if (qtdVida <= 0) {
+                                        stop();
+                                    } else {
+                                        qtdVida--;
+                                        this._obs.splice(i, 1);
+                                        tam--;
+                                        i--;
+                                        label.innerHTML = "Bem Vindo: " + nameUser + "</br> Placar: " + this.count + "</br>Vidas = " + qtdVida;
+                                    }
+                                };
+
                             };
 
+
+                            // verifica se o passaro esta a frente do cano
+                            if (passaro.x > obs.x + obs.largura) {
+                                //verifica se o passaro esta no chao
+                                if (passaro.y > this.y && passaro.x < obs.x + obs.largura) {
+                                    if (qtdVida <= 0) {
+                                        stop();
+                                    } else {
+                                        qtdVida--;
+                                        this._obs.splice(i, 1);
+                                        tam--;
+                                        i--;
+                                        label.innerHTML = "Bem Vindo: " + nameUser + "</br> Placar: " + this.count + "</br>Vidas = " + qtdVida;
+                                    }
+                                };
+
+                            } // verifica se o passaro esta atras do cano
+                            else if ((passaro.x + passaro.largura) > obs.x) {
+                                //verifica se o passaro esta no chao
+                                if (passaro.y > this.y && (passaro.x + passaro.largura) > obs.x) {
+                                    if (qtdVida <= 0) {
+                                        stop();
+                                    } else {
+                                        qtdVida--;
+                                        this._obs.splice(i, 1);
+                                        tam--;
+                                        i--;
+                                        label.innerHTML = "Bem Vindo: " + nameUser + "</br> Placar: " + this.count + "</br>Vidas = " + qtdVida;
+                                    }
+                                };
+
+                            };
                         };
-
-
-                        // verifica se o passaro esta a frente do cano
-                        if (passaro.x > obs.x + obs.largura) {
-                            //verifica se o passaro esta no chao
-                            if (passaro.y > this.y && passaro.x < obs.x + obs.largura) {
-                                if (qtdVida <= 0) {
-                                    stop();
-                                } else {
-                                    qtdVida--;
-                                    this._obs.splice(i, 1);
-                                    tam--;
-                                    i--;
-                                    label.innerHTML = "Bem Vindo: " + nameUser + "</br> Placar: " + this.count + "</br>Vidas = " + qtdVida;
-                                }
-                            };
-
-                        } // verifica se o passaro esta atras do cano
-                        else if ((passaro.x + passaro.largura) > obs.x) {
-                            //verifica se o passaro esta no chao
-                            if (passaro.y > this.y && (passaro.x + passaro.largura) > obs.x) {
-                                if (qtdVida <= 0) {
-                                    stop();
-                                } else {
-                                    qtdVida--;
-                                    this._obs.splice(i, 1);
-                                    tam--;
-                                    i--;
-                                    label.innerHTML = "Bem Vindo: " + nameUser + "</br> Placar: " + this.count + "</br>Vidas = " + qtdVida;
-                                }
-                            };
-
-                        };
-
 
                         if (obs.x <= -obs.largura) {
                             this.count++;
@@ -569,11 +1010,27 @@
             passaro.atualiza();
             obstaculos.atualiza();
             vida.atualiza();
+            bowser.atualiza();
+            star.atualiza();
 
         }
 
         function desenha() {
-            ctx.fillStyle = "#00FFFF";
+
+            if (hasStarStated == false) {
+                ctx.fillStyle = canvasColor;
+            } else {
+
+                if (colorChange == true) {
+                    ctx.fillStyle = canvasColor;
+                    colorChange = false;
+
+                } else {
+                    ctx.fillStyle = otherColor;
+                    colorChange = true;
+                }
+            }
+
 
             ctx.fillRect(0, 0, LARGURA, ALTURA);
             chao.desenha();
@@ -581,6 +1038,8 @@
             passaro.desenha();
             nuvem.desenhaNuvem();
             vida.desenha();
+            bowser.desenha();
+            star.desenha();
         }
 
         function starJogo() {
